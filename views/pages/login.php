@@ -1,6 +1,7 @@
 <?php
 // $pageContent = "auth/login-content.php"; // Include the login content file
 include("header.php");
+// session_start();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -12,17 +13,23 @@ include("header.php");
 <body>
     
     <div class="container my-5" style="width: 400px">
-        <h2 class="my-5">Login to your account</h2>
+        <h2 class="my-5" id="demo">Login to your account</h2>
+
+<?php if(isset($_SESSION['error']) && $_SESSION['error'] != ''): ?>
+    <h3 class='alert alert-danger' id='destroySession'><?= $_SESSION['error']; ?></h3>
+    <?php unset($_SESSION['error']); ?>
+<?php endif; ?>
+
     <form action="<?php echo htmlspecialchars("../../actions/authenticate.php") ?>" method="POST" autocomplete="off">
         <!-- Email input -->
         <div data-mdb-input-init class="form-outline mb-4">
-            <input type="email" name="email" id="form2Example1" class="form-control"/>
+            <input type="email" name="email" id="form2Example1" class="form-control" required/>
             <label class="form-label" for="form2Example2">Email</label>
         </div>
 
         <!-- Password input -->
         <div data-mdb-input-init class="form-outline mb-4">
-            <input type="password" name="password" id="form2Example2" class="form-control" />
+            <input type="password" name="password" id="form2Example2" class="form-control" required/>
             <label class="form-label" for="form2Example2">Password</label>
         </div>
 
@@ -71,6 +78,19 @@ include("header.php");
     <?php
        include("footer.php");
     ?>
+
+   <script>
+    // Wait for 3 seconds, then fade out the error message
+    setTimeout(function() {
+        let alertBox = document.getElementById("destroySession");
+        if(alertBox) {
+            alertBox.style.transition = "opacity 0.5s";
+            alertBox.style.opacity = "0";
+            setTimeout(() => alertBox.style.display = "none", 500); // Hide completely after fading out
+        }
+    }, 3000);
+</script>
+
 
 </body>
 </html>

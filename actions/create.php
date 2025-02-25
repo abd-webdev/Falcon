@@ -54,10 +54,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Insert post data into the database
     $stmt = $conn->prepare("INSERT INTO posts (title, description, image, author_id) VALUES (?, ?, ?, ?)");
     if ($stmt->execute([$title, $description, $target_file, $user_id])) {
+        $_SESSION['success'] = 'Post Added Successfully';
         header("Location: ../views/dashboard/index.php");
         exit();
     } else {
-        echo "Blog creation failed.";
+        $_SESSION['error'] = 'Post not added!';
+        header("Location: ../views/dashboard/index.php");
     }
 }
 ?>

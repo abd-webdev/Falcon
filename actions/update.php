@@ -2,51 +2,39 @@
 session_start();
 include '../config/database.php';
 
-if(empty(($_FILES['old-image']['name']))) {
+if (empty($_FILES['new-image']['name'])) {
     $target_file = $_POST['old-image'];
-}
-else{
+} else {
     $target_dir = "../uploads/";
-    $target_file = $target_dir . basename(path: $_FILES["new-image"]["name"]);
+    $target_file = $target_dir . basename($_FILES["new-image"]["name"]);
     $uploadOk = 1;
     $imageFileType = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
-    // Check if image file is a actual image or fake image
+
+    // Check if image file is an actual image or fake image
     $check = getimagesize($_FILES["new-image"]["tmp_name"]);
-    
-    if ($check !== false) {
-        echo "File is an image - " . $check["mime"] . ".";
-        $uploadOk = 1;
-    } else {
+    if ($check === false) {
         echo "File is not an image.";
         $uploadOk = 0;
     }
-    
-    // Check if file already exists
-    if (file_exists($target_file)) {
-        echo "Sorry, file already exists.";
-        $uploadOk = 0;
-    }
-    
-    // Check file size
+
+    // Check file size (max 5MB)
     if ($_FILES["new-image"]["size"] > 5000000) {
         echo "Sorry, your file is too large.";
         $uploadOk = 0;
     }
-    
-    // Allow certain file formats
-    if ($imageFileType != "jpg" && $imageFileType != "png" && $imageFileType != "jpeg" && $imageFileType != "gif") {
+
+    // Allow only JPG, JPEG, PNG & GIF
+    $allowedTypes = ["jpg", "jpeg", "png", "gif"];
+    if (!in_array($imageFileType, $allowedTypes)) {
         echo "Sorry, only JPG, JPEG, PNG & GIF files are allowed.";
         $uploadOk = 0;
     }
-    
-    // Check if $uploadOk is set to 0 by an error
-    if ($uploadOk == 0) {
-        echo "Sorry, your file was not uploaded.";
-    } else {
-        if (move_uploaded_file($_FILES["new-image"]["tmp_name"], $target_file)) {
-            echo "The file " . htmlspecialchars(basename($_FILES["new-image"]["name"])) . " has been uploaded.";
-        } else {
+
+    // Upload file if no errors
+    if ($uploadOk == 1) {
+        if (!move_uploaded_file($_FILES["new-image"]["tmp_name"], $target_file)) {
             echo "Sorry, there was an error uploading your file.";
+            exit();
         }
     }
 }
@@ -56,13 +44,14 @@ $description = $_POST['description'];
 $user_id = $_SESSION['user_id'];
 $post_id = $_POST['post_id'];
 
-    // Insert post data into the database
-    $stmt = $conn->prepare('UPDATE posts SET title = $title, description = $description, image = $target_file, author_id = $user_id WHERE id = ?');
-    if ($stmt->execute([$post_id])) {
-        header("Location: ../views/dashboard/index.php");
-        exit();
-    } else {
-        echo "Blog Updated failed.";
-    }
-
+// ✅ Corrected SQL Query with Proper Parameterization
+$stmt = $conn->prepare('UPDATE posts SET title = ?, description = ?, image = ?, author_id = ? WHERE id = ?');
+if ($stmt->execute([$title, $description, $target_file, $user_id, $post_id])) {
+    $_SESSION["success"] = "Post updated successfully";
+    header("Location: ../views/dashboard/index.php");
+    exit();
+} else {
+    $_SESSION['error'] = "Error updating post";
+    header("Location: ../views/dashboard/index.php");
+}
 ?>

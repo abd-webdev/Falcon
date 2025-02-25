@@ -52,6 +52,7 @@
                     if (isset($_SESSION["user_id"])) {
                         echo '<ul class="menu">
                         <li><a href="../../actions/logout.php">Logout</a></li>
+                        <li><a class="fa fa-arrow" href="../dashboard/index.php"><i class="fa-solid fa-arrow-left"></i> Back to dashboard</a></li>
                         </ul>';
                         // exit();
                     }
@@ -70,5 +71,7 @@
  
      <!-- MDBootstrap JS -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.2/mdb.min.js"></script>
+
+
 </body>
 

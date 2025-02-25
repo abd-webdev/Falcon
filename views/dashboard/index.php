@@ -1,16 +1,32 @@
-<?php include "header.php"; ?>
+<?php 
+include "checkAuth.php";
+include "header.php";
+?>
+
 <?php
 include '../../config/database.php';
-session_start();
 
 // Fetch all posts from the database
-$stmt = $conn->prepare("SELECT id, title, created_at, author_id FROM posts WHERE author_id = ?");
+$stmt = $conn->prepare("SELECT posts.id, posts.title, posts.created_at, posts.author_id, users.name AS author_name FROM posts
+                               JOIN users ON posts.author_id = users.id
+                               WHERE posts.author_id = ?");
 $stmt->execute([$_SESSION["user_id"]]);
 
 $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
   <div id="admin-content">
       <div class="container">
+
+            <?php if(isset($_SESSION['success']) && $_SESSION['success'] != ''): ?>
+            <h5 class='alert alert-success' id='destroySession'><?= $_SESSION['success']; ?></h5>
+            <?php unset($_SESSION['success']); ?>
+            <?php endif; ?>
+
+            <?php if(isset($_SESSION['error']) && $_SESSION['error'] != ''): ?>
+            <h5 class='alert alert-danger' id='destroySession'><?= $_SESSION['error']; ?></h5>
+            <?php unset($_SESSION['error']); ?>
+            <?php endif; ?>
+
           <div class="row">
               <div class="col-md-10">
                   <h1 class="admin-heading">All Posts</h1>
@@ -37,7 +53,7 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                           <td class='id'>{$serial}</td>
                                           <td>{$post['title']}</td>
                                           <td>{$post['created_at']}</td>
-                                          <td>{$post['author_id']}</td>
+                                          <td>{$post['author_name']}</td>
                                           <td class='edit'><a href='update-post.php?id={$post['id']}'><i class='fa fa-edit'></i></a></td>
                                           <td class='delete'><a href='delete-post.php?id={$post['id']}'><i class='fa fa-trash-o'></i></a></td>
                                         </tr>";
@@ -59,3 +75,14 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
       </div>
   </div>
 <?php include "footer.php"; ?>
+<script>
+    // Wait for 3 seconds, then fade out the error message
+    setTimeout(function() {
+        let alertBox = document.getElementById("destroySession");
+        if(alertBox) {
+            alertBox.style.transition = "opacity 0.5s";
+            alertBox.style.opacity = "0";
+            setTimeout(() => alertBox.style.display = "none", 500); // Hide completely after fading out
+        }
+    }, 3000);
+</script>

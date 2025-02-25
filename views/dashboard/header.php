@@ -1,7 +1,7 @@
 <?php
-if (isset($_SESSION['user_id'])){
-   header("location: ../pages/index.php");
-}
+// if (isset($_SESSION['user_id'])){
+//    header("location: ../pages/index.php");
+// }
 ?>
 <!DOCTYPE html>
 <html lang="en">

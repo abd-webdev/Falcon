@@ -1,4 +1,8 @@
-<?php include "header.php"; ?>
+<?php 
+include "checkAuth.php";
+include "header.php";
+?>
+
 <div id="admin-content">
   <div class="container">
   <div class="row">
@@ -9,9 +13,7 @@
         <!-- Form for show edit-->
 
         <?php include "../../config/database.php";
-        session_start();
            $post_id = $_GET["id"];
-            echo "Post id".$post_id." ";
            $stmt = $conn->prepare('SELECT title, description, image, created_at from posts where id = ?');
            $stmt->execute([$post_id]);
            $post = $stmt->fetch(PDO::FETCH_ASSOC);

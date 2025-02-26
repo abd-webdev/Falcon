@@ -5,7 +5,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     include '../../config/database.php';
     include '../../middleware/authenticate.php';
     include '../../actions/validateImage.php';
-
+    include '../../utils/JsonResponse.php';
+  
     $user_id = authenticate($conn);
 
     $title = trim($_POST["title"]);
@@ -35,7 +36,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt = $conn->prepare("INSERT INTO posts (title, description, image, author_id) VALUES (?, ?, ?, ?)");
     if ($stmt->execute([$title, $description, $target_file, $user_id])) {
         $_SESSION['success'] = 'Post Added Successfully';
-        echo json_encode(["message" => "Post added successfully"]);
+         success($title, "Post added successfully");
  
         exit();
     } else {

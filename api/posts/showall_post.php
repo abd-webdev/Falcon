@@ -10,7 +10,7 @@ $total_posts = count($posts);
 if($posts){
     echo json_encode(array('status'=> 'success',
                                   'message'=> $total_posts . ' Posts Successfully display',
-                                    'posts'=> $posts));
+                                  'posts'=> $posts));
 }else{
     echo json_encode(array('error'=> 'No post found'));
 }

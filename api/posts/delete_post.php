@@ -4,12 +4,12 @@ include("../../config/database.php");
 include("../../middleware/authenticate.php");
 
 $user_id = authenticate($conn);
-if (!isset($_POST['post_id']) || empty($_POST['post_id'])) {
+if (!isset($_GET['id']) || empty($_GET['id'])) {
     echo json_encode(array('status' => 'error', 'message' => 'Post ID not found.'));
     exit();
 }
 
-$post_id = $_POST['post_id'];
+$post_id = $_GET['id'];
 
 $post = $conn->prepare('SELECT id, title, description, image FROM posts WHERE id = ?');
 $post->execute([$post_id]);

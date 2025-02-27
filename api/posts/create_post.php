@@ -1,4 +1,5 @@
 <?php
+header("Content-Type: application/json");
 session_start();
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -6,42 +7,53 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     include '../../middleware/authenticate.php';
     include '../../actions/validateImage.php';
     include '../../utils/JsonResponse.php';
-  
+
     $user_id = authenticate($conn);
 
     $title = trim($_POST["title"]);
     $description = trim($_POST["description"]);
-  
-    $target_dir = "../../uploads/";
-    $target_file = $target_dir . basename($_FILES["image"]["name"]);
-    $uploadOk = 1;
-    $imageFileType = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
 
+    $target_dir = "../../uploads/";
+
+    $originalFilename = pathinfo($_FILES["image"]["name"], PATHINFO_FILENAME);
+    $imageFileType = strtolower(pathinfo($_FILES["image"]["name"], PATHINFO_EXTENSION));
+
+    $timestamp = time(); 
+    $newFilename = $originalFilename . "_" . $timestamp . "." . $imageFileType;
+    $target_file = $target_dir . $newFilename;
+
+    $uploadOk = 1;
     $check = getimagesize($_FILES["image"]["tmp_name"]);
-   
-    // validating the images
-    validateImage($check, $target_file,$imageFileType );
+
+    validateImage($check, $target_file, $imageFileType);
 
     if ($uploadOk == 0) {
-        echo json_encode(["error" => "Sorry, your file was not uploaded."]);
+        error($response, 'Sorry, your post is not uploaded!');
         exit();
     } else {
         if (move_uploaded_file($_FILES["image"]["tmp_name"], $target_file)) {
         } else {
-            echo "Sorry, there was an error uploading your file.";
+            error($response, 'There is an error uploading your post!');
             exit();
         }
     }
 
+    $imagePath = "uploads/" . $newFilename;
+
+    $response = [
+        "title" => $title,
+        "description" => $description,
+        "image" => $imagePath, 
+    ];
+
     $stmt = $conn->prepare("INSERT INTO posts (title, description, image, author_id) VALUES (?, ?, ?, ?)");
-    if ($stmt->execute([$title, $description, $target_file, $user_id])) {
+    if ($stmt->execute([$title, $description, $imagePath, $user_id])) {
         $_SESSION['success'] = 'Post Added Successfully';
-         success($title, "Post added successfully");
- 
+        success($response, "Post added successfully");
         exit();
     } else {
         $_SESSION['error'] = 'Post not added!';
-        header("Location: ../views/dashboard/index.php");
+        error($response, 'There is an error adding your post!');
     }
 }
 ?>

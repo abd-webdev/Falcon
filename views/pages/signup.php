@@ -38,13 +38,11 @@ include("header.php");
     <label class="form-label" for="form2Example2">Password</label>
   </div>
 
-  <!-- Checkbox -->
-  <div class="form-check d-flex justify-content-center mb-4">
-    <input class="form-check-input me-2" type="checkbox" value="" id="form2Example33" checked />
-    <label class="form-check-label" for="form2Example33">
-      Subscribe to our newsletter
-    </label>
-  </div>
+  <label for="role">Select Role:</label>
+    <select name="role_id">
+        <option value="1">Author</option>
+        <option value="2">Admin</option>
+    </select>
 
   <!-- Submit button -->
   <button data-mdb-ripple-init type="submit" class="btn btn-primary btn-block mb-4">Sign up</button>

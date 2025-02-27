@@ -1,5 +1,7 @@
 <?php
 include '../../config/database.php';
+include '../../utils/JsonResponse.php';
+header("Content-Type: application/json");
 
 function generateToken() {
     return bin2hex(random_bytes(32)); // 64-character token
@@ -18,8 +20,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // Store token in tokens table
         $stmt = $conn->prepare("INSERT INTO tokens (user_id, token) VALUES (?, ?)");
         $stmt->execute([$user['id'], $token]);
-
-        echo json_encode(["message" => "Login successful", "token" => $token]);
+        $data['token'] = $token;
+        // echo json_encode(["message" => "Login successful", "token" => $token]);
+        success($data, "Successfully Logged In");
     } else {
         echo json_encode(["error" => "Invalid credentials"]);
     }

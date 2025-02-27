@@ -1,5 +1,5 @@
 <?php
-
+header("Content-Type: application/json");
 include '../../config/database.php';
 include '../../actions/validateImage.php';
 include '../../middleware/authenticate.php';
@@ -9,7 +9,6 @@ $user_id = authenticate($conn);
 if (empty($_FILES['new-image']['name'])) {
     $target_dir = "../../uploads/";
     $target_file = $target_dir . basename($_FILES["old-image"]["name"]);
-    
 } else {
     $target_dir = "../../uploads/";
     $target_file = $target_dir . basename($_FILES["new-image"]["name"]);

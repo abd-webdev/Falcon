@@ -1,6 +1,7 @@
 <?php
 include("../../config/database.php");
 include("../../middleware/authenticate.php");
+header("Content-Type: application/json");
 
 $user_id = authenticate($conn);
 

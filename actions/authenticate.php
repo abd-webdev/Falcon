@@ -14,6 +14,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['user_name'] = $user['name'];
         $_SESSION['error'] = "";
+        $_SESSION['role'] = "";
         header("Location: ../views/dashboard/index.php");
         exit();
     } else {

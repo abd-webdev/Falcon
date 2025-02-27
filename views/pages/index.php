@@ -4,8 +4,9 @@
 include '../../config/database.php';
 $stmt = $conn->prepare('SELECT posts.id, posts.title, posts.description, posts.image, posts.created_at, posts.author_id,
                                users.name AS author_name  from posts 
-                               JOIN users on posts.author_id = users.id');
-$stmt->execute();
+                               JOIN users on posts.author_id = users.id
+                               WHERE posts.status = ?');
+$stmt->execute(["approved"]);
 $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 ?>

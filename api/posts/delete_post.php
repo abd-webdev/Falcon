@@ -1,7 +1,9 @@
 <?php
+header("Content-Type: application/json");
 session_start();
 include("../../config/database.php");
 include("../../middleware/authenticate.php");
+
 
 $user_id = authenticate($conn);
 if (!isset($_GET['id']) || empty($_GET['id'])) {

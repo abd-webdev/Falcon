@@ -1,18 +1,28 @@
 <?php 
-include "checkAuth.php";
+// include "checkAuth.php";
 include "header.php";
 ?>
 
 <?php
 include '../../config/database.php';
+include "../../middleware/checkRole.php";
 
-// Fetch all posts from the database
-$stmt = $conn->prepare("SELECT posts.id, posts.title, posts.created_at, posts.author_id, users.name AS author_name FROM posts
+
+if(checkRole($conn) == 'admin') {
+    $stmt = $conn->prepare('SELECT posts.id, posts.title, posts.created_at, posts.author_id, posts.status, users.name AS author_name FROM posts
+                               JOIN users ON posts.author_id = users.id ');
+   $stmt->execute();
+   $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+}else{
+
+    // Fetch all posts from the database
+    $stmt = $conn->prepare("SELECT posts.id, posts.title, posts.created_at, posts.author_id, posts.status, users.name AS author_name FROM posts
                                JOIN users ON posts.author_id = users.id
                                WHERE posts.author_id = ?");
-$stmt->execute([$_SESSION["user_id"]]);
+    $stmt->execute([$_SESSION["user_id"]]);
+    $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-$posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
 ?>
   <div id="admin-content">
       <div class="container">
@@ -39,10 +49,15 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
                       <thead>
                           <th>S.No.</th>
                           <th>Title</th>
-                          <th>Date</th>
+                          <th>Status</th>
                           <th>Author</th>
                           <th>Edit</th>
                           <th>Delete</th>
+                          <?php
+                          if(checkRole($conn) == "admin"){
+                            echo "<th>Actions</th>";
+                        }  
+                          ?>
                       </thead>
                       <tbody>
                           <?php
@@ -52,11 +67,18 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                   echo "<tr>
                                           <td class='id'>{$serial}</td>
                                           <td>{$post['title']}</td>
-                                          <td>{$post['created_at']}</td>
+                                          <td>{$post['status']}</td>
                                           <td>{$post['author_name']}</td>
                                           <td class='edit'><a href='update-post.php?id={$post['id']}'><i class='fa fa-edit'></i></a></td>
                                           <td class='delete'><a href='delete-post.php?id={$post['id']}'><i class='fa fa-trash-o'></i></a></td>
-                                        </tr>";
+                                        ";
+                                    if(checkRole($conn) == "admin"){
+                                        if($post['status'] == "pending") {
+                                        echo "<td class='edit'><a class='btn btn-primary' href='../../actions/verifyPost.php?approve=1&post_id={$post['id']}'>Approve</a></td>";
+                                    } else{
+                                        echo "<td class='edit'><a class='btn btn-danger' href='../../actions/verifyPost.php?approve=0&post_id={$post['id']}'>Reject</a></td>";
+                                    }   
+                                }
                                   $serial++;
                               }
                           } else {

@@ -1,18 +1,36 @@
-<?php
-include '../../config/database.php';
-$stmt = $conn->prepare('SELECT posts.id, posts.title, posts.description, posts.image, posts.created_at, posts.author_id,
-                               users.name AS author_name  from posts 
-                               JOIN users on posts.author_id = users.id');
-$stmt->execute();
-$posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
-$total_posts = count($posts);
+<?php 
+header("Content-Type: application/json");
+include("../../config/database.php");
+include("../../utils/JsonResponse.php");
 
-if($posts){
-    echo json_encode(array('status'=> 'success',
-                                  'message'=> $total_posts . ' Posts Successfully display',
-                                  'posts'=> $posts));
-}else{
-    echo json_encode(array('error'=> 'No post found'));
-}
+$limit = 10; 
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$offset = ($page - 1) * $limit; 
 
+ $count = $conn->prepare("SELECT COUNT(*) as total FROM posts");
+ $count->execute();
+ $totalResult = $count->fetch(PDO::FETCH_ASSOC);
+ $totalRecords = $totalResult['total'];
+
+$totalPages = ceil($totalRecords / $limit);
+
+$query = $conn->prepare("SELECT posts.id, posts.title, posts.description, posts.created_at, posts.image, 
+                                users.name AS author_name FROM posts
+                                JOIN users ON posts.author_id = users.id
+                                ORDER BY posts.created_at DESC
+                                LIMIT ? OFFSET ?
+                                ");
+                                
+$query->bindValue(1, $limit, PDO::PARAM_INT);
+$query->bindValue(2, $offset, PDO::PARAM_INT);
+$query->execute();
+$posts = $query->fetchAll(PDO::FETCH_ASSOC);
+
+$response = [
+    "current_page" => $page,
+    "total_pages" => $totalPages,
+    "total_records" => $totalRecords
+];
+
+success($posts, "Post fetch successfully",$response);
 ?>

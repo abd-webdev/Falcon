@@ -5,7 +5,7 @@ include('../../config/database.php');
 function authenticate($conn) {
     $headers = getallheaders();
     if (!isset($headers['Authorization'])) {
-        echo json_encode(["error" => "not authorized"]);
+        echo json_encode(["error" => "Unauthorized!"]);
         exit;
     }
 
@@ -16,7 +16,7 @@ function authenticate($conn) {
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
     
     if (!$user) {
-        echo json_encode(["error" => "Invalid or expired token"]);
+       error($user, "Invalid or expired token");
         exit;
     }
 

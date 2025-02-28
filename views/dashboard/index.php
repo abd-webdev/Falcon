@@ -1,5 +1,4 @@
-<?php 
-// include "checkAuth.php";
+<?php
 include "header.php";
 ?>
 
@@ -9,10 +8,29 @@ include "../../middleware/checkRole.php";
 
 
 if(checkRole($conn) == 'admin') {
-    $stmt = $conn->prepare('SELECT posts.id, posts.title, posts.created_at, posts.author_id, posts.status, users.name AS author_name FROM posts
-                               JOIN users ON posts.author_id = users.id ');
-   $stmt->execute();
-   $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $limit = 10; 
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$offset = ($page - 1) * $limit; 
+
+ $count = $conn->prepare("SELECT COUNT(*) as total FROM posts");
+ $count->execute();
+ $totalResult = $count->fetch(PDO::FETCH_ASSOC);
+ $totalRecords = $totalResult['total'];
+
+$totalPages = ceil($totalRecords / $limit);
+
+$query = $conn->prepare("SELECT posts.id, posts.title, posts.description, posts.created_at, posts.author_id, posts.status, posts.image, 
+                                users.name AS author_name FROM posts
+                                JOIN users ON posts.author_id = users.id
+                                ORDER BY posts.created_at DESC
+                                LIMIT ? OFFSET ?
+                                ");
+                                
+$query->bindValue(1, $limit, PDO::PARAM_INT);
+$query->bindValue(2, $offset, PDO::PARAM_INT);
+$query->execute();
+$posts = $query->fetchAll(PDO::FETCH_ASSOC);
+
 }else{
 
     // Fetch all posts from the database
@@ -21,7 +39,6 @@ if(checkRole($conn) == 'admin') {
                                WHERE posts.author_id = ?");
     $stmt->execute([$_SESSION["user_id"]]);
     $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
 }
 ?>
   <div id="admin-content">
@@ -87,11 +104,22 @@ if(checkRole($conn) == 'admin') {
                           ?>
                       </tbody>
                   </table>
-                  <ul class='pagination admin-pagination'>
-                      <li class="active"><a>1</a></li>
-                      <li><a>2</a></li>
-                      <li><a>3</a></li>
-                  </ul>
+                  <!-- Pagination -->
+            <ul class='pagination'>
+                <?php if ($page > 1) : ?>
+                    <li><a href="?page=<?php echo ($page - 1); ?>">Previous</a></li>
+                <?php endif; ?>
+
+                <?php for ($i = 1; $i <= $totalPages; $i++) : ?>
+                    <li class="<?php echo ($i == $page) ? 'active' : ''; ?>">
+                        <a href="?page=<?php echo $i; ?>"><?php echo $i; ?></a>
+                    </li>
+                <?php endfor; ?>
+
+                <?php if ($page < $totalPages) : ?>
+                    <li><a href="?page=<?php echo ($page + 1); ?>">Next</a></li>
+                <?php endif; ?>
+            </ul>
               </div>
           </div>
       </div>

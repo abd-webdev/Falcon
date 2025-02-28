@@ -24,7 +24,7 @@ if (empty($_FILES['new-image']['name'])) {
     }
 
     // Allow only JPG, JPEG, PNG & GIF
-    $allowedTypes = ["jpg", "jpeg", "png", "gif"];
+    $allowedTypes = ["jpg", "jpeg", "png", "jfif"];
     if (!in_array($imageFileType, $allowedTypes)) {
         echo "Sorry, only JPG, JPEG, PNG & GIF files are allowed.";
         $uploadOk = 0;

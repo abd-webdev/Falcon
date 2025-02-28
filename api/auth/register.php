@@ -4,16 +4,11 @@ include("../../config/database.php");
 include("../../utils/JsonResponse.php");
 header("Content-Type: application/json");
 
-
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $data = json_decode(file_get_contents("php://input"), true);
 
-    $response = [ 
-        "name" => $data['name'],
-        "email" => $data['email']
-    ];
-    if (!$data || !isset($data['email']) || !isset($data['password'])) {
-        error($response, "Missing email or password");
+    if (!$data || !isset($data['email']) || !isset($data['password']) || !isset($data['role_id'])) {
+        error($data["email"], "Missing email or password");
         exit;
     }
 
@@ -24,10 +19,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         error($data['email'], "Email already exist" );
         exit;
     }
-
-    $stmt = $conn->prepare("INSERT INTO users (name, email, password) VALUES (?, ?, ?)");
-    $stmt->execute([$data['name'], $data['email'], password_hash($data['password'], PASSWORD_BCRYPT)]);
+    
+    $stmt = $conn->prepare("INSERT INTO users (name, email, role_id, password) VALUES (?, ?, ?, ?)");
+    $stmt->execute([$data['name'], $data['email'], $data['role_id'], password_hash($data['password'], PASSWORD_BCRYPT)]);
+    unset($data["password"]);
    
-      success($response,"User Registered Successfully");
+    success($data,"User Registered Successfully");
 }
 ?>

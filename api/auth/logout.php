@@ -10,5 +10,9 @@ $token = $headers['Authorization'];
 $stmt = $conn->prepare("DELETE FROM tokens WHERE token = ?");
 $stmt->execute([$token]);
 
+session_start();
+session_unset();
+session_destroy();
+
 echo json_encode(["message" => "Logged out successfully"]);
 ?>

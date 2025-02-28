@@ -1,15 +1,34 @@
 <?php include 'header.php'; ?>
 
-<?php
-include '../../config/database.php';
-$stmt = $conn->prepare('SELECT posts.id, posts.title, posts.description, posts.image, posts.created_at, posts.author_id,
-                               users.name AS author_name  from posts 
-                               JOIN users on posts.author_id = users.id
-                               WHERE posts.status = ?');
-$stmt->execute(["approved"]);
-$posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+<?php 
+
+include("../../config/database.php");
+
+$limit = 5; 
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$offset = ($page - 1) * $limit; 
+
+ $count = $conn->prepare("SELECT COUNT(*) as total FROM posts");
+ $count->execute();
+ $totalResult = $count->fetch(PDO::FETCH_ASSOC);
+ $totalRecords = $totalResult['total'];
+
+$totalPages = ceil($totalRecords / $limit);
+
+$query = $conn->prepare("SELECT posts.id, posts.title, posts.description, posts.created_at, posts.author_id, posts.image, 
+                                users.name AS author_name FROM posts
+                                JOIN users ON posts.author_id = users.id
+                                ORDER BY posts.created_at DESC
+                                LIMIT ? OFFSET ?
+                                ");
+                                
+$query->bindValue(1, $limit, PDO::PARAM_INT);
+$query->bindValue(2, $offset, PDO::PARAM_INT);
+$query->execute();
+$posts = $query->fetchAll(PDO::FETCH_ASSOC);
 
 ?>
+
     <div id="main-content">
         <div class="container">
             <div class="row">
@@ -34,7 +53,7 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                             </span>
                                             <span>
                                                 <i class='fa fa-user' aria-hidden='true'></i>
-                                                <a href='author.php'>{$post['author_name']}</a>
+                                                <a href='author.php?id={$post['author_id']}'>{$post['author_name']}</a>
                                             </span>
                                             <span>
                                                 <i class='fa fa-calendar' aria-hidden='true'></i>
@@ -54,12 +73,23 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
                         ?>
                         
-                        
-                        <ul class='pagination'>
-                            <li class="active"><a href="">1</a></li>
-                            <li><a href="">2</a></li>
-                            <li><a href="">3</a></li>
-                        </ul>
+            <!-- Pagination -->
+            <ul class='pagination'>
+                <?php if ($page > 1) : ?>
+                    <li><a href="?page=<?php echo ($page - 1); ?>">Previous</a></li>
+                <?php endif; ?>
+
+                <?php for ($i = 1; $i <= $totalPages; $i++) : ?>
+                    <li class="<?php echo ($i == $page) ? 'active' : ''; ?>">
+                        <a href="?page=<?php echo $i; ?>"><?php echo $i; ?></a>
+                    </li>
+                <?php endfor; ?>
+
+                <?php if ($page < $totalPages) : ?>
+                    <li><a href="?page=<?php echo ($page + 1); ?>">Next</a></li>
+                <?php endif; ?>
+            </ul>
+
                     </div><!-- /post-container -->
                 </div>
                 <?php include 'sidebar.php'; ?>

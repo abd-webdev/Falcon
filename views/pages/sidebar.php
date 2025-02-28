@@ -3,11 +3,12 @@
 
     <?php
     include("../../config/database.php");
-    $stmt = $conn->prepare('SELECT posts.id, posts.title, posts.description, posts.image, posts.created_at, posts.author_id,
+    $stmt = $conn->prepare('SELECT posts.id, posts.title, posts.description, posts.image, posts.created_at, posts.status, posts.author_id,
                                 users.name AS author_name  from posts 
                                 JOIN users on posts.author_id = users.id
+                                WHERE posts.status = ?
                                 ORDER BY created_at DESC limit 5');
-    $stmt->execute();
+    $stmt->execute(["approved"]);
     $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     ?>
